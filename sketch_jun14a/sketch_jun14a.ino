@@ -132,7 +132,7 @@ void loop() {
       lcd.print(" of ");
       lcd.print(medicines[medicineIndex].name);
       //rotateMotor(medicineIndex, quantity);
-      buzz(quantity);
+      buzz(quantity); // TODO: Needs to add this inside of the ratate Motor Function so when it will buzzer after each Pill despece.
 
       // Sending Whatsapp Notofication
       String message = "Dispensing " + String(quantity) + " of " + String(medicines[medicineIndex].name);
@@ -205,3 +205,5 @@ void sendMessage(String message){
   // Free resources
   http.end();
 }
+
+// TODO: Needs to create Roatate Motor function with buzzer function inside.
