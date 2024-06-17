@@ -46,7 +46,7 @@ int bufferIndex = 0; // Index to track position in the buffer
 
 // Medicine setup 
 struct Time {
-  char time[3]; // Changes this to 24 hour format --  Eg: "0830"; -- changed on 2024/06/16  
+  char time[4]; // Changes this to 24 hour format --  Eg: "0830"; -- changed on 2024/06/16  
   int quantity;
 };
 
@@ -115,7 +115,7 @@ void loop() {
       int medicineIndex = buffer[0] - '0'; // If need to acces through array just addd -1
       lcd.clear();
       lcd.setCursor(0, 0);
-      lcd.print("Enter Med ");
+      lcd.print("Enter Medicine ");
       lcd.print(medicines[medicineIndex].name);
       lcd.print(" Quantity");
     }
