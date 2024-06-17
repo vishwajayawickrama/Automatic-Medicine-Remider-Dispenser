@@ -8,8 +8,8 @@
 #include <UrlEncode.h>
 
 // Wifi Credentials
-const char* ssid = "P M Jayawickrama";
-const char* password = "20020706";
+const char* ssid = "Vishwa's Galaxy";
+const char* password = "vishwacat";
 
 // call Me Bot API Information
 // +international_country_code + phone number
@@ -46,7 +46,7 @@ int bufferIndex = 0; // Index to track position in the buffer
 
 // Medicine setup 
 struct Time {
-  char time[4]; // Changes this to 24 hour format --  Eg: "0830"; -- changed on 2024/06/16  
+  char time[3]; // Changes this to 24 hour format --  Eg: "0830"; -- changed on 2024/06/16  
   int quantity;
 };
 
