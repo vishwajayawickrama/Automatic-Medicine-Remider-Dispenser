@@ -72,6 +72,7 @@ void setup() {
 
   fetchMedicine();
   printMedicine();
+  displayMedicineNamesOnLCD();
 }
 
 void loop() {
@@ -112,13 +113,19 @@ void handleKeypadInput() {
     bufferIndex++;
     Serial.println(key); // for debugging purposes
 
-    if (bufferIndex == 1) {
+    if (bufferIndex == 1 && isdigit(buffer[0])) {
       int medicineIndex = buffer[0] - '0' - 1; // If need to access through array just add -1
       lcd.clear();
       lcd.setCursor(0, 0);
       lcd.print("Enter Medicine ");
       lcd.print(medicines[medicineIndex].name);
       lcd.print(" Quantity");
+    }else if (bufferIndex == 1 && buffer[0] == 'A') {
+      fetchMedicine();
+      printMedicine();
+      Serial.println("Medicine Data has been updated");
+      clearBuffer();
+      displayMedicineNamesOnLCD();
     }
 
     if (bufferIndex == 3 && key == '#') {
@@ -129,20 +136,25 @@ void handleKeypadInput() {
       lcd.setCursor(0, 0);
       lcd.print("Dispensing ");
       lcd.print(quantity);
-      lcd.print(" of ");
+      lcd.print(" ");
       lcd.print(medicines[medicineIndex].name);
+      lcd.print("s.");
       // rotateMotor(medicineIndex, quantity);
       buzz(quantity); // TODO: Needs to add this inside of the rotate Motor Function so when it will buzzer after each Pill dispense.
 
-      String message = "Dispensing " + String(quantity) + " of " + String(medicines[medicineIndex].name);
+      String message = "Dispensing " + String(quantity) + " " + String(medicines[medicineIndex].name) + "s.";
       sendMessage(message);
 
       clearBuffer();
+      delay(2000);
+      displayMedicineNamesOnLCD();
+
     } else if (key == '#') {
       lcd.setCursor(0, 0);
       lcd.print("Need to Enter Quantity");
       delay(2000);
       clearBuffer();
+      displayMedicineNamesOnLCD();
     }
   }
 }
@@ -280,6 +292,18 @@ void printMedicine() {
       Serial.println(medicines[i].times[j].time);
     }
     Serial.println();
+  }
+}
+
+// Function to print the medicine names data to the LCD Display
+void displayMedicineNamesOnLCD() {
+  lcd.clear(); // Clear the display
+
+  for (int i = 0; i < 4; i++) {
+    lcd.setCursor(0, i); // Set the cursor to column 0, row i
+    lcd.print(i + 1);
+    lcd.print(". ");
+    lcd.print(medicines[i].name);
   }
 }
 
