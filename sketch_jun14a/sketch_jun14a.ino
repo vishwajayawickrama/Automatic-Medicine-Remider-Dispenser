@@ -459,7 +459,7 @@ void updateDocument(const String &collection, int document, int newQuantity) {
 // Medicine Dispencing System
 
 
-// Function to initialize motors
+// Function to initialize motor
 void initializeMotors() {
   for (int i = 0; i < motorsCount; i++) {
     pinMode(stepPins[i], OUTPUT);
