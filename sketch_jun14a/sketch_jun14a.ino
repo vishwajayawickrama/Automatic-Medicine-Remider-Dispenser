@@ -93,7 +93,7 @@ void setup() {
   initializeMotors();
 
 
-  updateDocument("medicines", 3, 30);
+  //updateDocument("medicines", 3, 30);
   fetchMedicine();
   printMedicine();
   displayMedicineNamesOnLCD();
@@ -166,6 +166,7 @@ void handleKeypadInput() {
       lcd.print(medicines[medicineIndex].name);
       lcd.print("s.");
       // rotateMotor(medicineIndex, quantity);
+      dispenseMedicine(medicineIndex, quantity);
       buzz(quantity); // TODO: Needs to add this inside of the rotate Motor Function so when it will buzzer after each Pill dispense.
 
       String message = "Dispensing " + String(quantity) + " " + String(medicines[medicineIndex].name) + "s.";
@@ -384,6 +385,8 @@ void displayMedicineNamesOnLCD() {
     lcd.print(i + 1);
     lcd.print(". ");
     lcd.print(medicines[i].name);
+    lcd.setCursor(18, i);
+    lcd.print(medicines[i].quantity);
   }
 }
 
