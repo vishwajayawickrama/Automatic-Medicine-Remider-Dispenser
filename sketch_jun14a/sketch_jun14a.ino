@@ -16,7 +16,7 @@ const int motorsCount = 4;
 const int stepsPerRevolution = 200;
 
 
-// Wifi Credentials
+// Wifi Credential
 const char* ssid = "Dialog 4G";
 const char* password = "E781A2F1";
 
