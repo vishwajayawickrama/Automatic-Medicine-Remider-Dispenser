@@ -87,13 +87,15 @@ void setup() {
   printMedicine();
 
   // Initialize the RTC
-  initializeRTC();
+  //initializeRTC();
 
   // Initialize the motors
-  initializeMotors();
+  //initializeMotors();
 
 
-  //updateDocument("medicines", 3, 30);
+  updateDocument("medicines", 3, 23);
+  updateDocument("medicines", 1, 11);
+  updateDocument("medicines", 2, 43);
   fetchMedicine();
   printMedicine();
   displayMedicineNamesOnLCD();
@@ -390,38 +392,7 @@ void displayMedicineNamesOnLCD() {
   }
 }
 
-// void updateDocument(const String &collection, int document, int newQuantity) {
-//   medicines[document - 1].quantity = medicines[document - 1].quantity - newQuantity;
-//   HTTPClient http;
-//   String url = firestoreURL + "/" + collection + "/" + String(document) + "?key=" + firestoreAPIKey;
-//   Serial.println("Requesting URL: " + url);
 
-//   // Prepare the JSON payload
-//   DynamicJsonDocument doc(256);
-//   JsonObject fields = doc.createNestedObject("fields");
-//   JsonObject quantity = fields.createNestedObject("quantity");
-//   quantity["integerValue"] = newQuantity;
-
-//   String payload;
-//   serializeJson(doc, payload);
-//   Serial.println("Payload: " + payload);
-
-//   // Start the HTTP PATCH request
-//   http.begin(url);
-//   http.addHeader("Content-Type", "application/json");
-//   int httpResponseCode = http.PATCH(payload);
-
-//   if (httpResponseCode > 0) {
-//     String response = http.getString();
-//     Serial.println("Document updated successfully");
-//     Serial.println(response);
-//   } else {
-//     Serial.print("Error updating document: ");
-//     Serial.println(httpResponseCode);
-//     Serial.println(http.errorToString(httpResponseCode).c_str());
-//   }
-//   http.end();
-// }
 
 void updateDocument(const String &collection, int document, int newQuantity) {
   HTTPClient http;
