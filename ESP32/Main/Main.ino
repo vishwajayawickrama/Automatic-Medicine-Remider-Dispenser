@@ -101,7 +101,7 @@ void loop() {
   checkMedicineTimes();
 }
 
-// Displaying Welcome Message untill it retireves medicine data from Server
+// Displaying Welcome Message untill it retireves medicine data from Server // Sachini
 void displayWelcomMessage() {
   lcd.clear();
   lcd.setCursor(3, 0); 
@@ -124,6 +124,7 @@ void connectToWiFi() {
   Serial.println();
 }
 
+// Send Message to whatsapp number using CallMe Bot // Sachini
 void sendMessage(String message) {
   if (WiFi.status() != WL_CONNECTED) {
     connectToWiFi();
@@ -147,7 +148,7 @@ void sendMessage(String message) {
   http.end();
 }
 
-// Function to set up the buzzer pin as an output
+// Function to set up the buzzer pin as an output // Lakshan
 void setupBuzzer() {
   pinMode(buzzerPin, OUTPUT);
 }
@@ -157,7 +158,7 @@ void setupI2C() {
   Wire.begin();
 }
 
-// Function to initialize the LCD
+// Function to initialize the LCD // Sachini 
 void setupLCD() {
   lcd.init();
   lcd.backlight();
@@ -169,12 +170,12 @@ void setupSerial() {
   Serial.begin(115200);
 }
 
-// Function to initialize the keypad
+// Function to initialize the keypad // Lakshan
 void setupKeypad() {
   keypad.begin();
 }
 
-// Function to handle keypad input
+// Function to handle keypad input // Lakshan
 void handleKeypadInput() {
   char key = keypad.getKey();
 
@@ -230,13 +231,13 @@ void handleKeypadInput() {
   }
 }
 
-// Function to clear the input buffer
+// Function to clear the input buffer // Lakshan
 void clearBuffer() {
   bufferIndex = 0;
   memset(buffer, 0, bufferSize);
 }
 
-// Function to activate the buzzer for a specified number of times
+// Function to activate the buzzer for a specified number of times  // Lakshan
 void buzz(int num) {
   for (int i = 0; i < num; i++) {
     digitalWrite(buzzerPin, HIGH); // Turn on the buzzer
@@ -257,7 +258,7 @@ void printJsonDocument(const DynamicJsonDocument& doc) {
   Serial.println(jsonString);
 }
 
-// Function to get data from Firestore and store in the medicine array
+// Function to get data from Firestore and store in the medicine array // Lakshan
 void getMedicineData(int medicineIndex) {
   HTTPClient http;
 
@@ -327,7 +328,7 @@ void getMedicineData(int medicineIndex) {
   http.end();  // Close connection
 }
 
-// Get documents from server and save in the medicines array
+// Get documents from server and save in the medicines array // Lakshan
 void fetchMedicine() {
   // Initialize and fetch data for each medicine in the array
   for (int i = 0; i < 4; ++i) { // Updated to 4 medicines
@@ -336,7 +337,7 @@ void fetchMedicine() {
   }
 }
 
-// Update Medicine Data
+// Update Medicine Data // Lakshan
 void updateMedicineData(int medicineIndex) {
   HTTPClient http;
 
@@ -381,7 +382,7 @@ void updateMedicineData(int medicineIndex) {
   fetchMedicine();
 }
 
-// Function to print the medicine names data to the LCD Display
+// Function to print the medicine names data to the LCD Display //
 void displayMedicineNamesOnLCD() {
   lcd.clear(); // Clear the display
 
@@ -563,6 +564,7 @@ void dispenseMedicine(int medicineIndex, int quantity) {
     Serial.print("Insufficient quantity of ");
     Serial.print(medicines[medicineIndex].name);
     Serial.println(". Cannot dispense.");
+    displayInsufficientQuantityMessage(medicineIndex);
     return;
   }
 
