@@ -15,8 +15,8 @@ const int motorsCount = 4;
 const int stepsPerRevolution = 200;
 
 // Wifi Credential
-const char* ssid = "Dialog 4G";
-const char* password = "E781A2F1";
+const char* ssid = "Laka's S21+";
+const char* password ="llllllll";
 
 // call Me Bot API Information
 String phoneNumber = "+94774730705";
@@ -32,6 +32,8 @@ const int buzzerPin = 15;
 
 // Initialize the RTC 
 RTC_DS3231 rtc;
+
+DateTime lastCheckDate;
 
 // Keypad setup
 const byte ROWS = 4;
@@ -57,7 +59,8 @@ int bufferIndex = 0; // Index to track position in the buffer
 
 // Medicine Setup
 struct Time {
-  char time[5]; // Adjust size based on your time format
+  char time[5];
+  bool dispensed;
 };
 
 // Define your Medicine struct here
@@ -75,6 +78,7 @@ Medicine medicines[4];
 
 
 void setup(){
+  initializeMotors();
   setupBuzzer();
   setupI2C();
   setupKeypad();
@@ -83,7 +87,7 @@ void setup(){
   displayWelcomMessage();
   connectToWiFi();
   sendMessage("  Welcome to MediSync!  ");
-  //initializeRTC();
+  initializeRTC();
 
 
   // Getting Medicine Data and storing them in array and Displaying them
@@ -93,7 +97,8 @@ void setup(){
 
 void loop() {
   handleKeypadInput();
-  //checkMedicineTimes();
+  //displayTime();
+  checkMedicineTimes();
 }
 
 // Displaying Welcome Message untill it retireves medicine data from Server
@@ -336,7 +341,7 @@ void updateMedicineData(int medicineIndex) {
   HTTPClient http;
 
   // Specify the API endpoint for updating the medicine data
-  String url = "http://206.189.132.45:3000/medicine/" + String(medicines[medicineIndex].id); // Adjust endpoint as per your API
+  String url = "http://206.189.132.45:3000/medicine/" + String(medicines[medicineIndex].id + 1); // Adjust endpoint as per your API
   Serial.println("Updating medicine data at URL: " + url);
 
   // Construct JSON payload for the PUT request
@@ -429,24 +434,87 @@ void initializeRTC() {
   }
 }
 
+// To print time to serial montor
+void displayTime() {
+  DateTime now = rtc.now();
+
+  Serial.print(now.year(), DEC);
+  Serial.print('/');
+  Serial.print(now.month(), DEC);
+  Serial.print('/');
+  Serial.print(now.day(), DEC);
+  Serial.print(" ");
+  Serial.print(now.hour(), DEC);
+  Serial.print(':');
+  Serial.print(now.minute(), DEC);
+  Serial.print(':');
+  Serial.print(now.second(), DEC);
+  Serial.println();
+  delay(1000);
+}
+
 // Function to check medicine times and alert if necessary
+// void checkMedicineTimes() {
+//   DateTime now = rtc.now();
+//   char currentTime[5];
+//   sprintf(currentTime, "%02d%02d", now.hour(), now.minute());
+
+//   for (int i = 0; i < 4; i++) {
+//     for (int j = 0; j < medicines[i].times_per_day; j++) {
+//       if (strcmp(currentTime, medicines[i].times[j].time) == 0) {
+//         String message = "Take Your Medicine. " + String(medicines[i].dose) + " " + String(medicines[i].name) + "s.";
+//         sendMessage(message);
+//         buzz(medicines[i].dose); // Needs to change
+//         dispenseMedicine(i, medicines[i].dose);
+//         displayMedicineAlert(medicines[i].name, medicines[i].dose);
+//         displayMedicineNamesOnLCD();
+
+        
+//       }
+//     }
+//   }
+// }
+
+void resetDispensedFlags() {
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < medicines[i].times_per_day; j++) {
+      medicines[i].times[j].dispensed = false;
+    }
+  }
+}
+
 void checkMedicineTimes() {
   DateTime now = rtc.now();
-  char currentTime[5];
-  sprintf(currentTime, "%02d%02d", now.hour(), now.minute());
+  int currentTimeMinutes = now.hour() * 60 + now.minute();
+
+  // Check if the date has changed and reset dispensed flags if it has
+  if (now.day() != lastCheckDate.day() || now.month() != lastCheckDate.month() || now.year() != lastCheckDate.year()) {
+    resetDispensedFlags();
+    lastCheckDate = now;
+  }
 
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < medicines[i].times_per_day; j++) {
-      if (strcmp(currentTime, medicines[i].times[j].time) == 0) {
+      int medicineTimeHour = atoi(medicines[i].times[j].time) / 100;
+      int medicineTimeMinute = atoi(medicines[i].times[j].time) % 100;
+      int medicineTimeMinutes = medicineTimeHour * 60 + medicineTimeMinute;
+
+      // Check if the time is within ±5 minutes and if it hasn't been dispensed yet
+      if (abs(currentTimeMinutes - medicineTimeMinutes) <= 5 && !medicines[i].times[j].dispensed) {
         String message = "Take Your Medicine. " + String(medicines[i].dose) + " " + String(medicines[i].name) + "s.";
         sendMessage(message);
-        buzz(medicines[i].dose); // Needs to change
+        buzz(10); // Needs to change
         displayMedicineAlert(medicines[i].name, medicines[i].dose);
         dispenseMedicine(i, medicines[i].dose);
+
+        // Mark this time slot as dispensed
+        medicines[i].times[j].dispensed = true;
+        displayMedicineNamesOnLCD();
       }
     }
   }
 }
+
 
 // Function to display the medicine alert on the LCD and Serial
 void displayMedicineAlert(const char* name, int dose) {
@@ -491,34 +559,52 @@ void initializeMotors() {
 void dispenseMedicine(int medicineIndex, int quantity) {
   Medicine &medicine = medicines[medicineIndex];
 
-  if (quantity > medicine.quantity) {
+  if (quantity > medicines[medicineIndex].quantity) {
     Serial.print("Insufficient quantity of ");
-    Serial.print(medicine.name);
+    Serial.print(medicines[medicineIndex].name);
     Serial.println(". Cannot dispense.");
     return;
   }
 
-  int steps = quantity * 10; // 10 steps per unit dose
+  int twoTimes = quantity * 5; // 10 steps per unit dose
 
-  for (int i = 0; i < steps; i++) {
-    digitalWrite(stepPins[medicineIndex], HIGH);
-    delayMicroseconds(1000); // Adjust delay for your motor's speed
-    digitalWrite(stepPins[medicineIndex], LOW);
-    delayMicroseconds(1000); // Adjust delay for your motor's speed
+  for (int z = 0; z < twoTimes; z++) {
+    for (int i = 0; i < 2; i++) {
+      digitalWrite(stepPins[medicineIndex], HIGH);
+      delayMicroseconds(1500); // Control speed with this delay
+      digitalWrite(stepPins[medicineIndex], LOW);
+      delayMicroseconds(1500); // Control speed with this delay
+    }
+    delay(1000);
   }
 
-  medicine.quantity -= quantity; // Update remaining quantity
+
+  medicines[medicineIndex].quantity -= quantity; // Update remaining quantity
 
   Serial.print("Dispensed ");
   Serial.print(quantity);
   Serial.print(" of ");
-  Serial.print(medicine.name);
+  Serial.print(medicines[medicineIndex].name);
   Serial.println(".");
   Serial.print("Remaining quantity: ");
-  Serial.println(medicine.quantity);
+  Serial.println(medicines[medicineIndex].quantity);
   // Updating FireBase Database
   //updateMedicineInFirestore(medicineIndex);
   updateMedicineData(medicineIndex);
+}
+
+void displayInsufficientQuantityMessage(int medicineIndex) {
+  lcd.clear();
+  lcd.setCursor(0, 0); // Set cursor to the first column, first row
+  lcd.print("Insufficient");
+  lcd.setCursor(0, 1); // Set cursor to the first column, second row
+  lcd.print("quantity of ");
+  lcd.setCursor(0, 2); // Set cursor to the first column, third row
+  lcd.print(medicines[medicineIndex].name);
+  lcd.setCursor(0, 3); // Set cursor to the first column, fourth row
+  lcd.print("Cannot dispense.");
+  delay(5000);
+
 }
 
 
