@@ -15,8 +15,8 @@ const int motorsCount = 4;
 const int stepsPerRevolution = 200;
 
 // Wifi Credential
-const char* ssid = "Laka's S21+";
-const char* password ="llllllll";
+const char* ssid = "Dialog 4G";
+const char* password ="E781A2F1";
 
 // call Me Bot API Information
 String phoneNumber = "+94774730705";
@@ -44,8 +44,8 @@ char keys[ROWS][COLS] = {
   {'7', '8', '9', 'C'},
   {'*', '0', '#', 'D'}
 };
-byte rowPins[ROWS] = {0, 1, 2, 3};
-byte colPins[COLS] = {4, 5, 6, 7};
+byte rowPins[ROWS] = {4, 5, 6, 7};
+byte colPins[COLS] = {0, 1, 2, 3};
 
 Keypad_I2C keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS, 0x20);
 
@@ -189,7 +189,9 @@ void handleKeypadInput() {
       lcd.clear();
       lcd.setCursor(0, 0);
       lcd.print("Enter Medicine ");
+      Serial.print("Enter Medicine");
       lcd.print(medicines[medicineIndex].name);
+      Serial.print(medicines[medicineIndex].name);
       lcd.print(" Quantity");
     }else if (bufferIndex == 1 && buffer[0] == 'A') {
       fetchMedicine();
@@ -210,8 +212,7 @@ void handleKeypadInput() {
       lcd.print(" ");
       lcd.print(medicines[medicineIndex].name);
       lcd.print("s.");
-      // rotateMotor(medicineIndex, quantity);
-      //dispenseMedicine(medicineIndex, quantity);
+      dispenseMedicine(medicineIndex, quantity);
       buzz(quantity); // TODO: Needs to add this inside of the rotate Motor Function so when it will buzzer after each Pill dispense.
 
       String message = "Dispensing " + String(quantity) + " " + String(medicines[medicineIndex].name) + "s.";
@@ -557,8 +558,50 @@ void initializeMotors() {
 }
 
 // Function to dispense medicine
+// void dispenseMedicine(int medicineIndex, int quantity) {
+//   Medicine &medicine = medicines[medicineIndex];
+
+//   if (quantity > medicines[medicineIndex].quantity) {
+//     Serial.print("Insufficient quantity of ");
+//     Serial.print(medicines[medicineIndex].name);
+//     Serial.println(". Cannot dispense.");
+//     displayInsufficientQuantityMessage(medicineIndex);
+//     return;
+//   }
+
+//   int twoTimes = quantity * 5; // 10 steps per unit dose
+
+//   for (int z = 0; z < twoTimes; z++) {
+//     for (int i = 0; i < 2; i++) {
+//       digitalWrite(stepPins[medicineIndex], HIGH);
+//       delayMicroseconds(1500); // Control speed with this delay
+//       digitalWrite(stepPins[medicineIndex], LOW);
+//       delayMicroseconds(1500); // Control speed with this delay
+//     }
+//     delay(1000);
+//   }
+
+
+//   medicines[medicineIndex].quantity -= quantity; // Update remaining quantity
+
+//   Serial.print("Dispensed ");
+//   Serial.print(quantity);
+//   Serial.print(" of ");
+//   Serial.print(medicines[medicineIndex].name);
+//   Serial.println(".");
+//   Serial.print("Remaining quantity: ");
+//   Serial.println(medicines[medicineIndex].quantity);
+//   // Updating FireBase Database
+//   //updateMedicineInFirestore(medicineIndex);
+//   updateMedicineData(medicineIndex);
+// }
+
 void dispenseMedicine(int medicineIndex, int quantity) {
-  Medicine &medicine = medicines[medicineIndex];
+  // Check if medicineIndex is valid
+  if (medicineIndex < 0 || medicineIndex >= sizeof(medicines) / sizeof(medicines[0])) {
+    Serial.println("Invalid medicine index.");
+    return;
+  }
 
   if (quantity > medicines[medicineIndex].quantity) {
     Serial.print("Insufficient quantity of ");
@@ -568,18 +611,19 @@ void dispenseMedicine(int medicineIndex, int quantity) {
     return;
   }
 
-  int twoTimes = quantity * 5; // 10 steps per unit dose
+  int totalSteps = quantity * 10; // 10 steps per unit dose
 
-  for (int z = 0; z < twoTimes; z++) {
-    for (int i = 0; i < 2; i++) {
-      digitalWrite(stepPins[medicineIndex], HIGH);
-      delayMicroseconds(1500); // Control speed with this delay
-      digitalWrite(stepPins[medicineIndex], LOW);
-      delayMicroseconds(1500); // Control speed with this delay
+  for (int z = 0; z < totalSteps; z++) {
+    digitalWrite(stepPins[medicineIndex], HIGH);
+    delayMicroseconds(1500); // Control speed with this delay
+    digitalWrite(stepPins[medicineIndex], LOW);
+    delayMicroseconds(1500); // Control speed with this delay
+
+    // Add a small delay after every 2 steps
+    if ((z + 1) % 2 == 0) {
+      delay(100);
     }
-    delay(1000);
   }
-
 
   medicines[medicineIndex].quantity -= quantity; // Update remaining quantity
 
@@ -590,8 +634,8 @@ void dispenseMedicine(int medicineIndex, int quantity) {
   Serial.println(".");
   Serial.print("Remaining quantity: ");
   Serial.println(medicines[medicineIndex].quantity);
-  // Updating FireBase Database
-  //updateMedicineInFirestore(medicineIndex);
+
+  // Updating Firebase Database
   updateMedicineData(medicineIndex);
 }
 
