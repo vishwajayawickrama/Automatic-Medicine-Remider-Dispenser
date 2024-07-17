@@ -220,6 +220,7 @@ void handleKeypadInput() {
                 displayMedicineNamesOnLCD();
             }
         } else if (bufferIndex == 1 && buffer[0] == 'A') {
+            connectToWiFi();
             fetchMedicine();
             printMedicine();
             Serial.println("Medicine Data has been updated");
@@ -228,8 +229,15 @@ void handleKeypadInput() {
         } else if (bufferIndex == 3 && key == '#') {
             int medicineIndex = buffer[0] - '0' - 1; // If need to access through array just add -1
             int quantity = buffer[1] - '0';
+
+            //print on lsc display
+            lcd.clear();
+            lcd.setCursor(0, 0);
+            lcd.print("Quantity: ");
+            lcd.print(quantity);
             Serial.print("Medicine Index: "); Serial.println(medicineIndex); // Debugging statement
             Serial.print("Quantity: "); Serial.println(quantity); // Debugging statement
+            delay(1000);
 
             if (medicineIndex >= 0 && medicineIndex < motorsCount && quantity > 0) {
                 lcd.clear();
@@ -307,7 +315,7 @@ void getMedicineData(int medicineIndex) {
     HTTPClient http;
 
     // Specify the API endpoint for a specific medicine ID
-    const char* firebaseHost = "https://basicshit-e46ce-default-rtdb.asia-southeast1.firebasedatabase.app";
+    const char* firebaseHost = "https://medisync-60405-default-rtdb.asia-southeast1.firebasedatabase.app";
 
     String url = String(firebaseHost) + "/medicines/" + String(medicineIndex) + ".json"; // Adjust path and index as needed
     Serial.println("Requesting URL: " + url);
@@ -376,9 +384,15 @@ void initializeMotors() {
     }
 }
 
-
 // Function to dispense the specified quantity of a medicine
 void dispenseMedicine(int medicineIndex, int quantity) {
+    if (medicines[medicineIndex].quantity < quantity) {
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("Not Enough Quantity");
+      delay(5000);
+      return;
+    }
     if (medicineIndex >= 0 && medicineIndex < motorsCount) {
         for (int q = 0; q < quantity; q++) {
             for (int i = 0; i < 5; i++) { // Rotate 5 times for each quantity
@@ -386,20 +400,15 @@ void dispenseMedicine(int medicineIndex, int quantity) {
                 delay(1000); // Adjust delay between rotations if needed
             }
             // Decrement the quantity of the dispensed medicine
-            medicines[medicineIndex].quantity--;
-            
-        } // Update quantity in Firestore
-            updateFirestoreQuantity(medicineIndex);
-            // Get updated medicine data after updating quantity
-        
-            fetchMedicine();
-            buzz(quantity);
-             while (checkDistance() <= 5) {
-                 digitalWrite(buzzerPin, HIGH); // Turn on the buzzer
-               }
-        
-                 // Turn off the buzzer after the tray is moved away
-                digitalWrite(buzzerPin, LOW);
+            medicines[medicineIndex].quantity--;   
+        } 
+        // Update quantity in Firestore
+        updateFirestoreQuantity(medicineIndex);
+
+        // Get updated medicine data after updating quantity
+        fetchMedicine();
+        buzz(quantity);
+       
     }
 }
 
@@ -410,9 +419,10 @@ void rotateMotor(int compartmentNumber) {
     if (motorIndex >= 0 && motorIndex < motorsCount) {
         steppers[motorIndex].move(2); // Move 2 steps
         steppers[motorIndex].runToPosition(); // Block until the motor reaches the position
+        // Reset the current position to 0 after each move to avoid backward movement
+        
     }
 }
-
 
 // Print Medicine Data on Serial Monitor
 void printMedicine() {
@@ -491,7 +501,9 @@ void initializeRTC() {
     lastCheckedQuantityDate = rtc.now();
 }
 // Function to check if it's time to dispense medicine and dispense it if it is
+
 void checkMedicineTimes() {
+    bool medicineDispensed = false;
     DateTime now = rtc.now();
     char currentTime[6];
     sprintf(currentTime, "%02d%02d", now.hour(), now.minute());
@@ -514,7 +526,7 @@ void checkMedicineTimes() {
 
             if (strcmp(currentTime, medicines[i].times[j].time) == 0 && !medicines[i].times[j].dispensed) {
                 dispenseMedicine(i, medicines[i].dose);
-                buzz(medicines[i].dose);
+                //buzz(medicines[i].dose);
                 medicines[i].times[j].dispensed = true;
 
                 String message = String(medicines[i].dose) + " " + medicines[i].name + " dispensed at " + currentTime;
@@ -526,12 +538,29 @@ void checkMedicineTimes() {
                 Serial.print(" dispensed at ");
                 Serial.println(currentTime);
 
-                 
+                 medicineDispensed = true;
             }
         }
-    }          
-}
+    }  
+    if (medicineDispensed) {
+      
 
+        // While the tray is close (distance <= 5), activate the buzzer
+        while (checkDistance() <= 5) {
+            digitalWrite(buzzerPin, HIGH); // Turn on the buzzer
+            delay(1000);
+            digitalWrite(buzzerPin, LOW);
+            delay(1000);
+            digitalWrite(buzzerPin, HIGH);
+        }
+        
+        // Turn off the buzzer after the tray is moved away
+        digitalWrite(buzzerPin, LOW);
+        
+        // Reset the flag after the buzzer is turned off
+        medicineDispensed = false;
+    }        
+}
 
 // Function to check medicine quantities and send a message if any quantity is less than 5
 void checkMedicineQuantities() {
@@ -555,7 +584,7 @@ void updateFirestoreQuantity(int medicineIndex) {
     HTTPClient http;
 
     // Specify the API endpoint for updating quantity
-    const char* firebaseHost = "https://basicshit-e46ce-default-rtdb.asia-southeast1.firebasedatabase.app";
+    const char* firebaseHost = "https://medisync-60405-default-rtdb.asia-southeast1.firebasedatabase.app";
 
     String url = String(firebaseHost) + "/medicines/" + String(medicineIndex) + ".json"; // Adjust path and index as needed
 
@@ -590,3 +619,6 @@ unsigned int checkDistance() {
     }
     return distance;
 }
+
+
+
