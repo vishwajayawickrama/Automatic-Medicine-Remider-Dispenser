@@ -516,7 +516,7 @@ void checkMedicineTimes() {
                 medicines[i].times[j].dispensed = false;
             }
         }
-        lastCheckDate = now;
+        lastCheckDate = rtc.now();
     }
 
     for (int i = 0; i < 4; i++) {
