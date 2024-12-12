@@ -9,7 +9,7 @@ The Automatic Medicine Reminder and Dispenser is a microcontroller-based project
 - **224096B** - [Jayawickrama P. M. V](https://github.com/vishwajayawickrama)
 - **224002L** - [Abenayake D. M. R. L](https://github.com/rlaka)
 - **224020N** - [Bandara H. M. P. L](https://github.com/Pasindulb)
-- **224101N** - [Kalansooriya S. I](https://github.com/SachiniImalsha22)
+- **224101N** - [Kalansooriya S. I](https://github.com/SachiniKalansooriya)
 
 ## University
 
