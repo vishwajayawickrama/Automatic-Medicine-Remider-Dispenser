@@ -1,0 +1,18 @@
+# Sensitive configuration files
+config.h
+credentials.h
+
+# Build artifacts
+*.elf
+*.bin
+*.hex
+build/
+.pio/
+.pioenvs/
+.piolibdeps/
+
+# IDE files
+.DS_Store
+*.swp
+*.swo
+*~
