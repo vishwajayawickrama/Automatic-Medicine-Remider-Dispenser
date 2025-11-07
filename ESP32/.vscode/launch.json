@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "c:/Users/User/Desktop/Automatic Medicine Reminder, Dispencer/Code/Automatic-Medicine-Remider-Dispenser/ESP32/main",
-      "program": "c:/Users/User/Desktop/Automatic Medicine Reminder, Dispencer/Code/Automatic-Medicine-Remider-Dispenser/ESP32/main/build/Debug/outDebug",
+      "cwd": "${workspaceFolder}/ESP32",
+      "program": "${workspaceFolder}/ESP32/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

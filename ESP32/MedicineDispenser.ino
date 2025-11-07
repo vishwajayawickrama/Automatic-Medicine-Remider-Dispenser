@@ -24,13 +24,19 @@ AccelStepper steppers[motorsCount] = {
     AccelStepper(AccelStepper::DRIVER, stepPins[3], dirPins[3])
 };
 
-// WiFi Credential
-const char* ssid = "Laka's S21+";
-const char* password = "llllllll";
+// ===== CONFIGURATION SECTION =====
+// TODO: Update these values before deployment
+// WiFi Credentials
+const char* ssid = "YOUR_WIFI_SSID";
+const char* password = "YOUR_WIFI_PASSWORD";
 
 // CallMeBot API Information
-String phoneNumber = "+94773403218";
-String apiKey = "3460097";
+String phoneNumber = "+YOUR_PHONE_NUMBER";
+String apiKey = "YOUR_API_KEY";
+
+// Firebase Configuration
+const char* firebaseHost = "https://medisync-60405-default-rtdb.asia-southeast1.firebasedatabase.app";
+// ===== END CONFIGURATION SECTION =====
 
 // Buzzer pin
 const int buzzerPin = 15;
@@ -317,8 +323,6 @@ void getMedicineData(int medicineIndex) {
     HTTPClient http;
 
     // Specify the API endpoint for a specific medicine ID
-    const char* firebaseHost = "https://medisync-60405-default-rtdb.asia-southeast1.firebasedatabase.app";
-
     String url = String(firebaseHost) + "/medicines/" + String(medicineIndex) + ".json"; // Adjust path and index as needed
     Serial.println("Requesting URL: " + url);
 
@@ -586,8 +590,6 @@ void updateFirestoreQuantity(int medicineIndex) {
     HTTPClient http;
 
     // Specify the API endpoint for updating quantity
-    const char* firebaseHost = "https://medisync-60405-default-rtdb.asia-southeast1.firebasedatabase.app";
-
     String url = String(firebaseHost) + "/medicines/" + String(medicineIndex) + ".json"; // Adjust path and index as needed
 
     // Construct the JSON payload

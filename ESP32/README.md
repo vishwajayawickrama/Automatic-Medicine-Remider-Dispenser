@@ -57,6 +57,8 @@ The consolidated firmware includes:
 
 Before uploading, configure the following in MedicineDispenser.ino:
 
+**Important**: Update the configuration section at the top of MedicineDispenser.ino:
+
 ```cpp
 // WiFi Credentials
 const char* ssid = "YOUR_WIFI_SSID";
@@ -69,6 +71,9 @@ String apiKey = "YOUR_API_KEY";
 // Firebase
 const char* firebaseHost = "YOUR_FIREBASE_URL";
 ```
+
+**Security Note**: Never commit sensitive credentials (WiFi passwords, API keys) to version control. 
+A `config.template.h` file is provided as a reference.
 
 ## Required Libraries
 
